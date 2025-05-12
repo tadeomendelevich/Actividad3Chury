@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "COMPILE",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "C:/Users/tadeo/OneDrive/Documentos/A_Facultad/Mecanica_Racional/MBEDGCC_VSC23/MyMake/MyMake.exe",
+      "args": [
+        "-j4",
+        "all"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "console": "internalConsole"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/tadeo/OneDrive/Documentos/A_Facultad/Mecanica_Racional/Tercer_trabajo/Actividad3Chury",
+      "program": "c:/Users/tadeo/OneDrive/Documentos/A_Facultad/Mecanica_Racional/Tercer_trabajo/Actividad3Chury/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
