@@ -28,8 +28,9 @@ const unsigned char dataCipmux[]="AT+CIPMUX=0\r\n";
 //const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"ANM2\",\"anm157523\"\r\n";
 //const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"FCAL\",\"fcalconcordia.06-2019\"\r\n";
 //const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"MEGACABLE FIBRA-2.4G-ckd0\",\"djg19dlk\"\r\n";  // Departamento Tadeo
+//const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"iPhone de Tadeo\",\"mendemende\"\r\n";
 
-const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"iPhone de Tadeo\",\"mendemende\"\r\n";
+const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"MEGACABLE FIBRA-2.4G-ckd0\",\"djg19dlk\"\r\n";  // Departamento Tadeo
 
 //const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"iPhone\",\"hola123\"\r\n";
 /**
@@ -41,8 +42,9 @@ const unsigned char dataCwjap[]="AT+CWJAP_DEF=\"iPhone de Tadeo\",\"mendemende\"
 
 //const unsigned char dataCipstart[]="AT+CIPSTART=\"UDP\",\"172.20.10.2\",30010,30001,0\r\n";
 //const unsigned char dataCipstart[]="AT+CIPSTART=\"UDP\",\"192.168.100.5\",30010,30001,0\r\n";  //Departamento Tadeo
-const unsigned char dataCipstart[]="AT+CIPSTART=\"UDP\",\"172.20.10.3\",30010,30001,0\r\n";
+//const unsigned char dataCipstart[]="AT+CIPSTART=\"UDP\",\"172.20.10.3\",30010,30001,0\r\n";
 
+const unsigned char dataCipstart[]="AT+CIPSTART=\"UDP\",\"192.168.100.5\",30010,30001,0\r\n";  //Departamento Tadeo
 
 
 #define     ALIVEAUTOINTERVAL   15000

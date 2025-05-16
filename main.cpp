@@ -56,7 +56,10 @@
 #define MEDIRDISTANCIA          flags.bits.bit3
 
 #define DIAMETRO_RUEDA 
-#define KP_CORRECCION            3
+#define KP_LEFTCORRECCION 500  // Ajustá este valor según la sensibilidad deseada
+#define KP_RIGHTCORRECCION 250  // Ajustá este valor según la sensibilidad deseada
+#define MAX_SPEED     25000
+#define BASE_SPEED    (250 * 30)  // Velocidad base ajustable
 
 /* END define ----------------------------------------------------------------*/
 
@@ -329,6 +332,11 @@ uint32_t limitePulsos = 0;
 int32_t auxSpeed = 0;
 
 int gradosToMove;
+
+int32_t rightAuxSpeed = 0;
+
+int32_t leftAuxSpeed = 0;
+
 /* END Global variables ------------------------------------------------------*/
 
 
@@ -901,6 +909,27 @@ void aliveAutoTask(_delay_t *aliveAutoTime)
     }
 }
 
+int32_t ajustarVelocidadIzquierda(int32_t rightEncoder, int32_t leftEncoder) {
+    int32_t error = rightEncoder - leftEncoder;
+    int32_t correction = KP_LEFTCORRECCION * error;
+    int32_t speed = BASE_SPEED + correction;
+
+    if (speed > MAX_SPEED) speed = MAX_SPEED;
+    if (speed < 0)          speed = 0;
+
+    return speed;
+}
+
+int32_t ajustarVelocidadDerecha(int32_t rightEncoder, int32_t leftEncoder) {
+    int32_t error = rightEncoder - leftEncoder;
+    int32_t correction = KP_RIGHTCORRECCION * error;
+    int32_t speed = 6000 - correction;
+
+    if (speed > MAX_SPEED) speed = MAX_SPEED;
+    if (speed < 0)          speed = 0;
+
+    return speed;
+}
 
 
 /* END Function prototypes user code ------------------------------------------*/
@@ -1046,25 +1075,10 @@ int main()
                     leftEncoder = 0;
                     actividad_state = REPOSO;
                 } else {
-                    // CONTROL PROPORCIONAL PARA AVANZAR RECTO
-                    int32_t error = (int32_t)rightEncoder - (int32_t)leftEncoder;
-                    int32_t correction = KP_CORRECCION * error;
-
-                    int baseSpeed = 250 * 30;  // Velocidad base (ajustable)
-
-                    // Aplico corrección en ambos motores
-                    int leftSpeed  = baseSpeed + correction;
-                    int rightSpeed = baseSpeed - correction;
-
-                    // Saturación para mantener dentro de rangos válidos
-                    if (leftSpeed > 25000) leftSpeed = 25000;
-                    if (leftSpeed < 0)     leftSpeed = 0;
-
-                    if (rightSpeed > 25000) rightSpeed = 25000;
-                    if (rightSpeed < 0)     rightSpeed = 0;
-
-                    speedMLeft.pulsewidth_us(leftSpeed);
-                    speedMRight.pulsewidth_us(rightSpeed);
+                    leftAuxSpeed = ajustarVelocidadIzquierda(rightEncoder, leftEncoder);
+                    rightAuxSpeed = ajustarVelocidadDerecha(rightEncoder, leftEncoder);
+                    speedMLeft.pulsewidth_us(leftAuxSpeed);
+                    speedMRight.pulsewidth_us(rightAuxSpeed);
                 }
             break;
             case ACT_3:
