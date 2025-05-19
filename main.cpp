@@ -56,8 +56,8 @@
 #define MEDIRDISTANCIA          flags.bits.bit3
 
 #define DIAMETRO_RUEDA 
-#define KP_LEFTCORRECCION 500  // Ajustá este valor según la sensibilidad deseada
-#define KP_RIGHTCORRECCION 250  // Ajustá este valor según la sensibilidad deseada
+#define KP_LEFTCORRECCION 100  // Ajustá este valor según la sensibilidad deseada
+#define KP_RIGHTCORRECCION 100  // Ajustá este valor según la sensibilidad deseada
 #define MAX_SPEED     25000
 #define BASE_SPEED    (250 * 30)  // Velocidad base ajustable
 
@@ -852,22 +852,23 @@ void irSensorsTask(){
 
 }
 
-
 void speedCountLeft(void){
     countLeftValue++;
+    leftEncoder++;
 }
 
 void speedCountRight(void){
     countRightValue++;
+    rightEncoder++;
 }
-
+/*
 void encoderCountRight(void){     // Agregado para contar los pulsos de manera separada
     rightEncoder++;
 }
 
 void encoderCountLeft(void){     // Agregado para contar los pulsos de manera separada
     leftEncoder++;
-}
+}*/
 void distanceInitMeasurement(void){
     initialValue=myTimer.read_us();
 }
@@ -909,27 +910,33 @@ void aliveAutoTask(_delay_t *aliveAutoTime)
     }
 }
 
-int32_t ajustarVelocidadIzquierda(int32_t rightEncoder, int32_t leftEncoder) {
-    int32_t error = rightEncoder - leftEncoder;
+// Control proporcional de la rueda IZQUIERDA
+int32_t ajustarVelocidadIzquierda(int32_t leftSpeed, int32_t rightSpeed) {
+    // error positivo → izquierda > derecha → bajar la izquierda
+    int32_t error      = leftSpeed - rightSpeed;
     int32_t correction = KP_LEFTCORRECCION * error;
-    int32_t speed = BASE_SPEED + correction;
+    int32_t v          = BASE_SPEED - correction;  // <-- signo invertido
 
-    if (speed > MAX_SPEED) speed = MAX_SPEED;
-    if (speed < 0)          speed = 0;
-
-    return speed;
+    // límites
+    if (v > MAX_SPEED) v = MAX_SPEED;
+    else if (v < 0)    v = 0;
+    return v;
 }
 
-int32_t ajustarVelocidadDerecha(int32_t rightEncoder, int32_t leftEncoder) {
-    int32_t error = rightEncoder - leftEncoder;
+// Control proporcional de la rueda DERECHA
+int32_t ajustarVelocidadDerecha(int32_t leftSpeed, int32_t rightSpeed) {
+    // error positivo → derecha > izquierda → bajar la derecha
+    int32_t error      = rightSpeed - leftSpeed;
     int32_t correction = KP_RIGHTCORRECCION * error;
-    int32_t speed = 6000 - correction;
+    int32_t v          = BASE_SPEED - correction;  // <-- signo invertido
 
-    if (speed > MAX_SPEED) speed = MAX_SPEED;
-    if (speed < 0)          speed = 0;
-
-    return speed;
+    // límites
+    if (v > MAX_SPEED) v = MAX_SPEED;
+    else if (v < 0)    v = 0;
+    return v;
 }
+
+
 
 
 /* END Function prototypes user code ------------------------------------------*/
@@ -999,10 +1006,6 @@ int main()
     speedLeft.rise(&speedCountLeft);
 
     speedRight.rise(&speedCountRight);
-
-    speedLeft.rise(&encoderCountLeft);
-
-    speedRight.rise(&encoderCountRight);
 
     hecho.rise(&distanceInitMeasurement);
 
@@ -1075,8 +1078,8 @@ int main()
                     leftEncoder = 0;
                     actividad_state = REPOSO;
                 } else {
-                    leftAuxSpeed = ajustarVelocidadIzquierda(rightEncoder, leftEncoder);
-                    rightAuxSpeed = ajustarVelocidadDerecha(rightEncoder, leftEncoder);
+                    leftAuxSpeed = ajustarVelocidadIzquierda(speedleftValue, speedRightValue);
+                    rightAuxSpeed = ajustarVelocidadDerecha(speedleftValue, speedRightValue);
                     speedMLeft.pulsewidth_us(leftAuxSpeed);
                     speedMRight.pulsewidth_us(rightAuxSpeed);
                 }
@@ -1105,14 +1108,19 @@ int main()
                     if (rightEncoder >= distanciaY && rightEncoder >= distanciaY) {
                         speedMLeft.pulsewidth_us(0);    // Detengo los motores
                         speedMRight.pulsewidth_us(0);
-                        gradosToMove = 90;
+                        gradosToMove = 88;
                         if(delayRead(&statesDelay)) {
                             actividad4_state = GIRAR;
                             GirarAngulo(gradosToMove);
                              rightEncoder = 0;   // Reseteo variables encoders
                             leftEncoder = 0;     
                         }
-                    }
+                    } else {
+                        leftAuxSpeed = ajustarVelocidadIzquierda(speedleftValue, speedRightValue);
+                        rightAuxSpeed = ajustarVelocidadDerecha(speedleftValue, speedRightValue);
+                        speedMLeft.pulsewidth_us(leftAuxSpeed);
+                        speedMRight.pulsewidth_us(rightAuxSpeed);
+                        }
                     break;
                 case GIRAR:
                     if (rightEncoder >= limitePulsos && leftEncoder >= limitePulsos) {  // Realizo el giro
@@ -1134,6 +1142,11 @@ int main()
                         rightEncoder = 0;   // Reseteo variables encoders
                         leftEncoder = 0;
                         actividad_state = REPOSO;
+                    } else {
+                        leftAuxSpeed = ajustarVelocidadIzquierda(speedleftValue, speedRightValue);
+                        rightAuxSpeed = ajustarVelocidadDerecha(speedleftValue, speedRightValue);
+                        speedMLeft.pulsewidth_us(leftAuxSpeed);
+                        speedMRight.pulsewidth_us(rightAuxSpeed);
                     }
                     break;
                 default:
